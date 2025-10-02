@@ -570,7 +570,27 @@ Component({
     initScreenK() {
       if (!(getApp() && getApp().systemInfo && getApp().systemInfo.screenWidth)) {
         try {
-          getApp().systemInfo = wx.getSystemInfoSync();
+          // 优先使用新 API 组合获取系统信息
+          if (wx.getWindowInfo && wx.getAppBaseInfo && wx.getDeviceInfo) {
+            const windowInfo = wx.getWindowInfo()
+            const appBaseInfo = wx.getAppBaseInfo()
+            const deviceInfo = wx.getDeviceInfo()
+
+            getApp().systemInfo = {
+              // 窗口信息
+              screenWidth: windowInfo.screenWidth,
+              pixelRatio: windowInfo.pixelRatio,
+
+              // 应用基础信息
+              version: appBaseInfo.version,
+
+              // 设备信息
+              platform: deviceInfo.platform
+            }
+          } else {
+            // 兼容旧版本，使用 wx.getSystemInfoSync
+            getApp().systemInfo = wx.getSystemInfoSync()
+          }
         } catch (e) {
           console.error(`Painter get system info failed, ${JSON.stringify(e)}`);
           return;
